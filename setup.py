@@ -49,6 +49,22 @@ def get_venv_pip_executable():
         return VENV_DIR / "bin" / "pip"
 
 
+def install_certifi():
+    """Install certifi package first."""
+    pip_executable = get_venv_pip_executable()
+    print(f"\nInstalling certifi...")
+    
+    try:
+        subprocess.check_call(
+            [str(pip_executable), "install", "certifi"]
+        )
+        print("✓ certifi installed successfully")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"✗ Failed to install certifi: {e}")
+        return False
+
+
 def install_requirements():
     """Install packages from requirements.txt into the virtual environment."""
     if not REQUIREMENTS_FILE.exists():
@@ -145,15 +161,19 @@ def main():
     if not create_virtual_environment():
         sys.exit(1)
     
-    # Step 2: Install requirements
+    # Step 2: Install certifi first
+    if not install_certifi():
+        print("Warning: certifi installation may have failed")
+    
+    # Step 3: Install requirements
     if not install_requirements():
         print("Warning: Some packages may not have been installed correctly")
     
-    # Step 3: Download and cache model
+    # Step 4: Download and cache model
     if not download_and_cache_model():
         print("Warning: Model download may have failed, but setup will continue")
     
-    # Step 4: Print activation instructions
+    # Step 5: Print activation instructions
     print_activation_instructions()
     
     print("Setup complete! You can now use your virtual environment.")
